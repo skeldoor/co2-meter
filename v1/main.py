@@ -16,7 +16,8 @@ import breakout_scd41
 from pimoroni_i2c import PimoroniI2C
 from pimoroni import BREAKOUT_GARDEN_I2C_PINS  # or PICO_EXPLORER_I2C_PINS or HEADER_I2C_PINS
 import time
-
+import display_controller
+import random
 from max17048 import MAX17048
 
 
@@ -42,24 +43,22 @@ print("Chip Version:", hex(max17048.get_chip_version()))
 print("Cell Voltage:", max17048.get_cell_voltage(), "V")
 print("Cell Percentage:", max17048.get_cell_percent(), "%")
 
-
+print("SH1107: framebuf is ", ("standard" if sh1107._fb_variant ==1 else "extended") )
 
 
 while True:
     display.fill(0)
- 
     if breakout_scd41.ready():
         co2, temperature, humidity = breakout_scd41.measure()
-        print(co2, temperature, humidity)
-        display.text('CO2: ' + str(co2), 0, 0, 1)
-        display.text('Temp: ' + str(temperature), 0, 8, 1)
-        display.text('Humidity: ' + str(humidity), 0, 16, 1)
-        display.text('Bat %: ' + str(max17048.get_cell_percent()) + "%", 0, 24, 1)
-        display.text('Bat Volts: ' + str(max17048.get_cell_voltage()) + "V", 0, 32, 1)
-        display.show()
+        display_controller.draw_stats_screen(str(int(round(co2, 0))), str(int(round(temperature, 0))), str(int(round(humidity, 0))), str(int(round(max17048.get_cell_percent(), 0))), display)
         time.sleep(5.0)
     else:
-        time.sleep(0.5)
-        display.text('Waiting...', 0, 0, 1)
-        display.show()
+        display_controller.draw_loading_screen(display)
+        time.sleep(random.uniform(0.5, 1.5))
         
+
+    #display.text('CO2: ' + str(co2), 0, 0, 1)
+    #display.text('Temp: ' + str(temperature), 0, 8, 1)
+    #display.text('Humidity: ' + str(humidity), 0, 16, 1)
+    #display.text('Bat %: ' + str(max17048.get_cell_percent()) + "%", 0, 24, 1)
+    #display.text('Bat Volts: ' + str(max17048.get_cell_voltage()) + "V", 0, 32, 1)
